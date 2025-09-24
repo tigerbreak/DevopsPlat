@@ -1,0 +1,8 @@
+G:\java_practice\devops-platform\src\main\java\com\summer\devopsplatform\config\JenkinsConfig.java
+G:\java_practice\devops-platform\src\main\java\com\summer\devopsplatform\controller\JenkinsController.java
+G:\java_practice\devops-platform\src\main\java\com\summer\devopsplatform\DevopsPlatformApplication.java
+G:\java_practice\devops-platform\src\main\java\com\summer\devopsplatform\service\JenkinsService.java
+G:\java_practice\devops-platform\src\main\java\com\summer\devopsplatform\service\JenkinsServiceImpl.java
+G:\java_practice\devops-platform\src\main\java\com\summer\devopsplatform\terraform\dto\CreateMachineRequset.java
+G:\java_practice\devops-platform\src\main\java\com\summer\devopsplatform\terraform\dto\TerraformResult.java
+G:\java_practice\devops-platform\src\main\java\com\summer\devopsplatform\terraform\service\TerraformService.java
