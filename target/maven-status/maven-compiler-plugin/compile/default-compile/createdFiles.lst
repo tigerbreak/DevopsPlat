@@ -1,0 +1,11 @@
+com\summer\devopsplatform\terraform\dto\CreateMachineRequset.class
+com\summer\devopsplatform\config\JenkinsConfig.class
+com\summer\devopsplatform\terraform\service\TerraformService.class
+com\summer\devopsplatform\controller\JenkinsController.class
+com\summer\devopsplatform\terraform\controller\MachineController.class
+com\summer\devopsplatform\service\JenkinsServiceImpl.class
+com\summer\devopsplatform\service\JenkinsService.class
+com\summer\devopsplatform\DevopsPlatformApplication.class
+com\summer\devopsplatform\service\JenkinsServiceImpl$Crumb.class
+com\summer\devopsplatform\terraform\dto\TerraformResult.class
+com\summer\devopsplatform\terraform\entity\MachineRequest.class

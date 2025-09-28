@@ -1,6 +1,8 @@
 package com.summer.devopsplatform.terraform.service;
 
 import com.summer.devopsplatform.terraform.dto.TerraformResult;
+import com.summer.devopsplatform.terraform.entity.MachineRequest;
+import com.summer.devopsplatform.terraform.repository.MachineRequestRepository;
 import lombok.Data;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DaemonExecutor;
@@ -15,12 +17,22 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 
 @Service
 public class TerraformService {
     private static final String TF_DIRECORY = "G:\\terraform_work";
+    private final MachineRequestRepository machineRequestRepository;
 
+    // 通过构造函数注入Repository
+    public TerraformService(MachineRequestRepository machineRequestRepository) {
+        this.machineRequestRepository = machineRequestRepository;
+    }
     public TerraformResult createMachine(String environment,String instanceType,String awsRegion){
+        // 1. 创建并保存请求记录到数据库
+        MachineRequest machineRequest = new MachineRequest(environment, instanceType, awsRegion);
+        machineRequest = machineRequestRepository.save(machineRequest);
+
         try {
             //1.动态生成terraform的配置文件
             generateTerrafromConfig(environment,instanceType,awsRegion);
@@ -29,8 +41,19 @@ public class TerraformService {
             if (!initResult.isSuccess()){
                 return initResult;
             }
+
+
             //3.执行terraform的apply
             TerraformResult applyResult = execteTerraform("apply","-auto-approve");
+
+            // 5. 根据执行结果更新数据库
+            if (applyResult.isSuccess()) {
+                updateMachineRequestSuccess(machineRequest.getId(), applyResult);
+            } else {
+                updateMachineRequestFailure(machineRequest.getId(), applyResult.getMessage());
+            }
+
+
             return applyResult;
         }catch (Exception e){
             return new TerraformResult(false,"创建机器的时候发生错误" + e.getMessage());
@@ -38,6 +61,31 @@ public class TerraformService {
 
     }
 
+    // 更新成功状态的方法
+    private void updateMachineRequestSuccess(Long requestId, TerraformResult result) {
+        MachineRequest machineRequest = machineRequestRepository.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("请求记录不存在"));
+
+        machineRequest.setSuccess(true);
+        machineRequest.setMessage(result.getMessage());
+        machineRequest.setInstanceId(result.getInstanceId());
+        machineRequest.setPublicIp(result.getPublicip());
+        machineRequest.setCompletionTime(LocalDateTime.now());
+
+        machineRequestRepository.save(machineRequest);
+    }
+
+    // 更新失败状态的方法
+    private void updateMachineRequestFailure(Long requestId, String errorMessage) {
+        MachineRequest machineRequest = machineRequestRepository.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("请求记录不存在"));
+
+        machineRequest.setSuccess(false);
+        machineRequest.setMessage(errorMessage);
+        machineRequest.setCompletionTime(LocalDateTime.now());
+
+        machineRequestRepository.save(machineRequest);
+    }
     private void generateTerrafromConfig(String environment,String instanceType,String awsRegion) throws IOException{
         //TF的配置模板
         String tfConfig = String.format(
